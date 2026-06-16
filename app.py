@@ -1,5 +1,5 @@
 # app.py – Дашборд прогнозирования смысловых трендов
-# SARIMA vs CatBoost vs LSTM vs Seasonal Naive
+# LSTM, SARIMA, CatBoost, Seasonal Naive
 
 import streamlit as st
 import pandas as pd
@@ -48,7 +48,7 @@ class LSTMForecaster(nn.Module):
 
 st.set_page_config(page_title="Прогнозирование трендов", page_icon="", layout="wide")
 st.title(" Прогнозирование смысловых трендов в стратегическом дискурсе")
-st.markdown("*Модуль прогнозирования (SARIMA, CatBoost, LSTM, Naive) тематических трендов*")
+st.markdown("*Модуль прогнозирования тематических трендов (LSTM, SARIMA, CatBoost, Seasonal Naive)*")
 st.markdown("---")
 
 
@@ -264,7 +264,7 @@ with col1:
         naive_pred = forecast_naive(selected_topic, horizon)
         fig.add_trace(go.Scatter(x=forecast_dates, y=naive_pred,
                                  mode='lines', name='Seasonal Naive',
-                                 line=dict(color='#808080', width=2, dash='dash'),
+                                 line=dict(color='rgba(128, 128, 128, 0.7)', width=2),
                                  marker=dict(size=4, symbol='square')))
     
     # Разделитель train/test
@@ -296,7 +296,7 @@ with col1:
         # Краткосрочный тренд (сравнение последнего месяца с последним кварталом)
         is_growing = series.tail(4).mean() > series.tail(12).mean()
         trend = "↗️ Рост" if is_growing else "↘️ Спад"
-        st.metric("Краткосрочный тренд", trend)
+        st.metric("Тренд", trend)
     
     with m4:
         # Вычисляем среднее значение прогноза для выбранной модели
@@ -311,10 +311,10 @@ with col1:
         else:  # "Сравнение всех" - показываем среднее по LSTM как основной
             pred_mean = forecast_lstm(selected_topic, horizon).mean()
             
-        st.metric("Прогноз (выбранная модель)", f"{pred_mean:.1f}")
+        st.metric("Прогноз (сред.)", f"{pred_mean:.1f}")
 
 with col2:
-    st.subheader("📊 Распределение тем")
+    st.subheader("Распределение тем")
     topic_sums = trends.sum().sort_values(ascending=False)
     topic_labels = [topic_names.get(t, t) for t in topic_sums.index]
     
@@ -326,7 +326,7 @@ with col2:
     st.plotly_chart(fig_pie, width="stretch")
     
     st.markdown("---")
-    st.subheader("📋 Сводка по темам")
+    st.subheader("Сводка по темам")
     for t in trends.columns:
         total = trends[t].sum()
         last = trends[t].iloc[-1]
@@ -334,7 +334,7 @@ with col2:
         st.markdown(f"Всего: `{int(total)}` | Тек. нед.: `{int(last)}`")
     
     st.markdown("---")
-    st.subheader("🎯 Сравнение моделей (RMSE)")
+    st.subheader("Сравнение моделей (RMSE)")
     if metrics_info:
         detailed = metrics_info.get('detailed', {})
         topic_metrics = detailed.get(selected_topic, {})
@@ -359,4 +359,4 @@ with col2:
 # 7. Футер
 
 st.markdown("---")
-st.caption("© 2026 ВКР | Пайплайн: BERTopic → Анализ → Прогноз (SARIMA/CatBoost/LSTM/Naive) → Streamlit")
+st.caption("© 2026 ВКР | Пайплайн: BERTopic → Анализ → Прогноз (LSTM/SARIMA/CatBoost/Seasonal Naive) → Streamlit") 
